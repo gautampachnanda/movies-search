@@ -1,0 +1,47 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: MovieSearchApp
+  datasource: 
+      driverClassName: org.postgresql.Driver
+      url: "jdbc:postgresql://127.0.0.1/flyway"
+      password: "Pa55w0rd"
+      username: "flyway"
+      testOnBorrow: true
+      testWhileIdle: true
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 30000
+      validationQuery: SELECT 1
+      max-active: 15
+      max-idle: 10
+      max-wait: 8000
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+      naming_strategy: org.hibernate.cfg.ImprovedNamingStrategy
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        hbm2ddl:
+          auto: none
+        temp:
+          use_jdbc_metadata_defaults: false
+ribbon:
+  ServerListRefreshInterval: 1000
+endpoints:
+  health:
+    sensitive: false
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+logging:
+  file: logs/movies-service.log
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    org.springframework.web: INFO
+    org.hibernate: INFO
