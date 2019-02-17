@@ -15,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.apache.logging.log4j.util.Strings;
 
@@ -73,6 +74,9 @@ public class Programme implements Serializable {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "TITLE_TYPE")
 	private ProgrammeType programmeType;
+	
+	@Transient
+	private String uri;
 
 	public Programme() {
 
@@ -90,11 +94,10 @@ public class Programme implements Serializable {
 		this.endYear = endYear;
 		this.runtime = runtime;
 		this.genres = genres;
-		this.programmeType = programmeType;
+		this.setProgrammeType(programmeType);
 	}
 
 	public Programme(String tsvString) {
-		System.out.println(tsvString);
 		String[] lineValues = tsvString.split("\\t");
 		fromValues(lineValues);
 	}
@@ -172,7 +175,7 @@ public class Programme implements Serializable {
 	}
 
 	public ProgrammeType getType() {
-		return programmeType;
+		return getProgrammeType();
 	}
 
 	public String getImdbId() {
@@ -184,9 +187,6 @@ public class Programme implements Serializable {
 	}
 
 	private void fromValues(String[] values) {
-		for (String value : values) {
-			System.out.println(value);
-		}
 		title = values[2];
 		imdbId = values[0];
 		primaryTitle = values[2];
@@ -196,8 +196,8 @@ public class Programme implements Serializable {
 		startYear = getIntegerValue(values[5]);
 		endYear = getIntegerValue(values[6]);
 		runtime = getIntegerValue(values[7]);
-		genres = buildGenres(values[0]);
-		programmeType = ProgrammeType.fromName(values[1]);
+		genres = buildGenres(values[8]);
+		setProgrammeType(ProgrammeType.fromName(values[1]));
 		for (Genre genre : genres) {
 			genre.setProgramme(this);
 		}
@@ -221,12 +221,24 @@ public class Programme implements Serializable {
 			return null;
 		}
 	}
+	
+	public String getUrl() {
+		return String.format("/programme/imdbid/%s",this.imdbId);
+	}
+
+	public ProgrammeType getProgrammeType() {
+		return programmeType;
+	}
+
+	public void setProgrammeType(ProgrammeType programmeType) {
+		this.programmeType = programmeType;
+	}
 
 	@Override
 	public String toString() {
 		return "Programme [id=" + id + ", title=" + title + ", imdbId=" + imdbId + ", primaryTitle=" + primaryTitle
 				+ ", originalTitle=" + originalTitle + ", adult=" + adult + ", startYear=" + startYear + ", endYear="
-				+ endYear + ", runtime=" + runtime + ", genres=" + genres + ", programmeType=" + programmeType + "]";
+				+ endYear + ", runtime=" + runtime + ", genres=" + genres + ", programmeType=" + getProgrammeType() + "]";
 	}
 
 	@Override
@@ -240,7 +252,7 @@ public class Programme implements Serializable {
 		result = prime * result + ((imdbId == null) ? 0 : imdbId.hashCode());
 		result = prime * result + ((originalTitle == null) ? 0 : originalTitle.hashCode());
 		result = prime * result + ((primaryTitle == null) ? 0 : primaryTitle.hashCode());
-		result = prime * result + ((programmeType == null) ? 0 : programmeType.hashCode());
+		result = prime * result + ((getProgrammeType() == null) ? 0 : getProgrammeType().hashCode());
 		result = prime * result + ((runtime == null) ? 0 : runtime.hashCode());
 		result = prime * result + ((startYear == null) ? 0 : startYear.hashCode());
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
@@ -288,7 +300,7 @@ public class Programme implements Serializable {
 				return false;
 		} else if (!primaryTitle.equals(other.primaryTitle))
 			return false;
-		if (programmeType != other.programmeType)
+		if (getProgrammeType() != other.getProgrammeType())
 			return false;
 		if (runtime == null) {
 			if (other.runtime != null)
